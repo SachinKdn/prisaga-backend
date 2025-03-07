@@ -6,7 +6,8 @@
     "start": "node index.js",
     "dev": "nodemon --exec ts-node index.ts",
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prod": "npm run build && node ./dist/index.js",
   },
   "keywords": [],
   "author": "",

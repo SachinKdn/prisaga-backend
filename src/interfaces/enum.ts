@@ -8,15 +8,23 @@ export enum UserRole {
 
 
 export enum Department {
-    MEDICAL = "Medical",
-    MANAGEMENT = "Management",
-    IT="IT",
-    HR="HR"
+    Account_Finance_Legal = "Account / Finance / Legal",
+    Production_Manufacturing_Construction = "Production / Manufacturing / Construction",
+    Quality_Risk_Management="Quality / Risk Management",
+    HR_Payroll_Compliance="HR / Payroll / Compliance",
+    IT_ITES="IT / ITES",
+    Sales_Marketing_Business_Development="Sales / Marketing / Business Development",
+    Procurement_Supply_Chain="Procurement / Supply Chain",
+    Product_Management="Product Management",
+    Project_Program_Management="Project / Program Management",
 }
 export enum JobLevel {
-    ENTRY = "Entry",
-    JUNIOR = "Junior",
-    SENIOR = "Senior"
+    ENTRY = "0-1 Yr. Fresher",
+    ASSOCIATE = "1-4 Yr. Consultant / Associate",
+    SR_ASSOCIATE = "4-8 Yr. Sr. Associate / AM / DM",
+    MANAGER = "8-12 Yr. Manager",
+    SR_MANAGER = "12-15 Yr. Sr. Manager / AVP",
+    DIRECTOR = "15+ Yr. Director / VP"
 }
 export enum JobType {
     FREELANCE = "Freelance",

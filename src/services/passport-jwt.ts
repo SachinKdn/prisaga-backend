@@ -75,10 +75,10 @@ const isValidPassword = async function (value: string, password: string) {
       role: user?.role,
     };
      const jwtSecret = process.env.JWT_SECRET || "TOP_SECRET";
-     const accessToken = jwt.sign({ user: tokenData }, jwtSecret, { expiresIn: '1h' });
-     const refreshToken = jwt.sign({ user: tokenData }, jwtSecret, { expiresIn: '1h' });
-     const expireAt = new Date(Date.now() + 60 * 60 * 1000);
-     await saveSessionToken( tokenData?._id || "" , { accessToken: accessToken,expireAt, refreshToken })
+     const accessToken = jwt.sign({ user: tokenData }, jwtSecret, { expiresIn: '7d' });
+     const refreshToken = jwt.sign({ user: tokenData }, jwtSecret, { expiresIn: '7d' });
+     const expireAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+     await saveSessionToken( tokenData?._id || "" , { accessToken: accessToken, expireAt, refreshToken })
      return {
        user,
       accessToken,

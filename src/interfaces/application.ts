@@ -9,6 +9,8 @@ export interface IApplication extends BaseSchema{
     _id: string;
     firstName: string;
     lastName: string;
+    summary: string;
+    areaOfExpertise: string;
     email: string;
     phoneNumber: string;
     location: Location;
@@ -21,5 +23,5 @@ export interface IApplication extends BaseSchema{
     resume: mongoose.Types.ObjectId;
     status: JobStatus;
     skills: string[];
-    experience: number;
+    experience: string;
 }

@@ -57,3 +57,8 @@ export const updateStatus = async (id: string, data: string): Promise<IApplicati
 export const updateApplication = async (id: string, data: Partial<IApplication>): Promise<IApplication | null> => {
     return await Application.findByIdAndUpdate(id, data, { new: true });
 };
+
+export const getResumes = async () => {
+    const applications = await Application.find({isCreatedByAdmin: true}).populate('resume');
+    return applications;
+}

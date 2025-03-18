@@ -33,6 +33,19 @@ const application = await applicationService.createApplication(req.body);
     );
 }
 
+export const createResume = async (req: Request, res: Response) : Promise<void> => {
+
+    req.body =  {...req.body, createdBy: req.user?._id, createdByAgency: null, isCreatedByAdmin: true}
+  
+  const application = await applicationService.createApplication(req.body);
+  console.log("application-->", application)
+   res.send(
+      createResponse({
+          application,
+      })
+      );
+  }
+
 export const updateApplicationStatus = async (req: Request, res: Response): Promise<void> => {
   const application = await applicationService.updateStatus(req.params.id, req.body.status);
   if (!application) {
@@ -70,6 +83,7 @@ export const updateApplication = async (req: Request, res: Response): Promise<vo
 };
 
 export const uploadFiles = async (req: Request, res: Response) : Promise<void>=> {
+  try {
     const options = {
         port: process.env.PORT,
         cloud_name: process.env.CLOUDINARY_CLOUD_NAME,  // Replace with your Cloud name
@@ -85,13 +99,14 @@ export const uploadFiles = async (req: Request, res: Response) : Promise<void>=>
     console.log(options)
     cloudinary.v2.config(options);
     const stream = cloudinary.v2.uploader.upload_stream(
-        { resource_type: 'raw', public_id: `prisaga/${file.originalname}` }, // `resource_type: raw` for non-image files like PDFs
+        { resource_type: 'raw', access_mode: 'public', public_id: `prisaga/${file.originalname}` }, // `resource_type: raw` for non-image files like PDFs
         async (error, result) => {
           if (error) {
             throw createHttpError(400, {
                 message: `Error uploading to Cloudinary ${error.message}`
             });
           }
+          console.log(result)
           const newResume = {
             fileName: req.file?.originalname,
             fileUrl: result?.secure_url,
@@ -107,6 +122,25 @@ export const uploadFiles = async (req: Request, res: Response) : Promise<void>=>
         }
       );
     stream.end(file.buffer);
+    }catch (error) {
+      // Handle errors
+      console.error("Upload function error:", error);
+      if (error instanceof Error) {
+        res.status(500).send(
+          createResponse({
+            success: false,
+            message: error.message || "An error occurred during file upload"
+          })
+        );
+      } else {
+        res.status(500).send(
+          createResponse({
+            success: false,
+            message: "An unknown error occurred"
+          })
+        );
+      }
+    }
 }
 
 export const getUploadedApplicationById = async (req: Request, res: Response) : Promise<void> => {
@@ -152,4 +186,12 @@ export const getUploadedApplicationsByJobId = async (req: Request, res: Response
             applications,
         })
         );
+}
+
+export const getAllResumesUploadedByAdmins = async (req: Request, res: Response) : Promise<void> => {
+  console.log("Welcome to getAllResumesUploadedByAdmins")
+  const applications = await applicationService.getResumes();
+   res.send(
+      createResponse(applications)
+      );
 }

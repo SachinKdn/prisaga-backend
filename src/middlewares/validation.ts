@@ -6,7 +6,7 @@ import { createMemberUser, createUser, password, userLogin } from "../helper/val
 import { createAgency, toggleAllocateJobId } from "../helper/validations/agency";
 import { createCompany } from "../helper/validations/company";
 import { createJob } from "../helper/validations/job";
-import { createApplication } from "../helper/validations/application";
+import { createApplication, createResume } from "../helper/validations/application";
 import mongoose from "mongoose";
 
 
@@ -44,6 +44,9 @@ export const validate = (validationName: string): any[] => {
     }
     case "application:create": {
       return createApplication;
+    }
+    case "resume:create": {
+      return createResume;
     }
     default:
       return [];

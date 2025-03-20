@@ -37,7 +37,7 @@ app.use(passport.initialize());
 app.use(cookieParser());
 // app.use(cors());  
 app.use(cors({
-  origin: ['http://localhost:8000'], 
+  origin: ['http://localhost:8000', 'https://prisaga-hiring-plus.vercel.app'], 
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true

@@ -50,7 +50,7 @@ export const createUser = async (
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
     path: "/", // Cookie is available for all paths
   };
-  res.cookie("auth_token", accessToken, cookieConfig);
+  // res.cookie("auth_token", accessToken, cookieConfig);
 
   res.send(
     createResponse({ user: userData, accessToken, refreshToken })
@@ -187,7 +187,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     refreshToken,
   } = await createUserTokens(user);
 
-  res.cookie("auth_token", accessToken, cookieConfig);
+  // res.cookie("auth_token", accessToken, cookieConfig);
   res.send(createResponse({ user: userData, accessToken, refreshToken }));
 };
 

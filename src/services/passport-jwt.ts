@@ -27,7 +27,7 @@ const isValidPassword = async function (value: string, password: string) {
         jwtOptions,
         async (token, done) => {
           try {
-            console.log("try block")
+            console.log("try block - ", token.user)
             done(null, token.user);
           } catch (error) {
             console.log("cathcy block")
@@ -78,7 +78,7 @@ const isValidPassword = async function (value: string, password: string) {
      const accessToken = jwt.sign({ user: tokenData }, jwtSecret, { expiresIn: '7d' });
      const refreshToken = jwt.sign({ user: tokenData }, jwtSecret, { expiresIn: '7d' });
      const expireAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-     await saveSessionToken( tokenData?._id || "" , { accessToken: accessToken, expireAt, refreshToken })
+     await saveSessionToken( tokenData?._id || "" , { accessToken, expireAt, refreshToken })
      return {
        user,
       accessToken,
@@ -134,7 +134,7 @@ export const isUserToken = async (
     // Get the token from the authorization header
     const authHeader = req.headers.authorization;
     const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
-
+    console.log("Welcome to isUserToken")
     // If no token is provided, return a 401 error
     if (!token) {
       res.status(401).json({

@@ -1,6 +1,6 @@
 export interface Location {
     area?: string;
-    postalCode: number;
+    postalCode?: number;
     city: string;
     state: string;
 }

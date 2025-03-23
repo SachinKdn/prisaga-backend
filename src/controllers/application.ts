@@ -100,7 +100,7 @@ export const uploadFiles = async (req: Request, res: Response) : Promise<void>=>
     console.log(options)
     cloudinary.v2.config(options);
     const stream = cloudinary.v2.uploader.upload_stream(
-        { resource_type: 'raw', access_mode: 'public', public_id: `prisaga/${file.originalname}` }, // `resource_type: raw` for non-image files like PDFs
+        { resource_type: 'raw', access_mode: 'public', public_id: `prisaga/${file.originalname.replace(/\s+/g, '_')}_${Date.now()}` }, // `resource_type: raw` for non-image files like PDFs
         async (error, result) => {
           if (error) {
             throw createHttpError(400, {

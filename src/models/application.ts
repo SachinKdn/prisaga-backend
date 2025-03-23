@@ -22,7 +22,7 @@ export const ApplicationSchema = new Schema<IApplication>({
         ref: 'Resume'
     },
     status: { type: String, enum: Object.values(JobStatus), required: true, default: JobStatus.PENDING },
-    linkedin: { type: String, required: true },
+    linkedin: { type: String, required: false },
     experience: { type: String, enum: Object.values(ExperienceLevel), required: true },
     summary: { type: String, required: false },
     areaOfExpertise: { type: String, enum: Object.values(Department), required: true },

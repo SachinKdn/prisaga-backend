@@ -6,7 +6,7 @@ import { UserRole } from "../interfaces/enum";
 
 export const locationSchema = new Schema<Location>({
     area: { type: String, required: false },
-    postalCode: { type: Number, required: true },
+    postalCode: { type: Number, required: false },
     city: { type: String, required: true },
     state: { type: String, required: true },
   });

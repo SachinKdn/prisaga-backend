@@ -63,18 +63,6 @@ export const createApplication = [
     .withMessage("State must be a string")
     .notEmpty()
     .withMessage("State must not be empty"),
-    check("location.postalCode")
-    .exists()
-    .withMessage("Postal Code is required")
-    .bail()
-    .isInt()
-    .withMessage("Postal Code must be a number"),
-    check("linkedin")
-    .exists()
-    .withMessage("LinkedIn is required")
-    .bail()
-    .notEmpty()
-    .withMessage("LinkedIn must not be empty"),
     check("areaOfExpertise")
     .exists()
     .withMessage("Area Of Expertise is required")
@@ -163,12 +151,6 @@ export const createResume = [
   .withMessage("State must be a string")
   .notEmpty()
   .withMessage("State must not be empty"),
-  check("location.postalCode")
-  .exists()
-  .withMessage("Postal Code is required")
-  .bail()
-  .isInt()
-  .withMessage("Postal Code must be a number"),
   check("areaOfExpertise")
   .exists()
   .withMessage("Area Of Expertise is required")
@@ -181,12 +163,6 @@ export const createResume = [
   .bail()
   .notEmpty()
   .withMessage("Experience must not be empty"),
-  check("linkedin")
-  .exists()
-  .withMessage("LinkedIn is required")
-  .bail()
-  .notEmpty()
-  .withMessage("LinkedIn must not be empty"),
   check("resume")
   .exists()
   .withMessage("Resume ID is required")

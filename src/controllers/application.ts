@@ -11,6 +11,7 @@ import fs from 'fs';
 import cloudinary from 'cloudinary';
 import Resume from "../models/resume";
 import Application from "../models/application";
+import { createResumeFilter } from "../utils/createResumeFilter";
 
 
 export const createApplication = async (req: Request, res: Response) : Promise<void> => {
@@ -178,7 +179,6 @@ export const getMyUploadedApplicationById = async (req: Request, res: Response) 
 }
 
 export const getUploadedApplicationsByJobId = async (req: Request, res: Response) : Promise<void> => {
-    console.log("Welcome to getUploadedApplicationsByJobId")
     const id = req.params.id;
     const applications = await applicationService.getApplications(id);
      res.send(
@@ -189,9 +189,21 @@ export const getUploadedApplicationsByJobId = async (req: Request, res: Response
 }
 
 export const getAllResumesUploadedByAdmins = async (req: Request, res: Response) : Promise<void> => {
-  console.log("Welcome to getAllResumesUploadedByAdmins")
-  const applications = await applicationService.getResumes();
-   res.send(
-      createResponse(applications)
-      );
+  const { page = 1, limit = 10, ...query } = req.query;
+  const pageNumber = parseInt(page as string, 10);
+  const pageLimit = parseInt(limit as string, 10);
+  
+  const filter = createResumeFilter(query);
+    
+  console.log(filter, "<===filter getResumes")
+  const applications = await applicationService.getResumes(filter,pageNumber, pageLimit);
+  const totalCount = await Application.countDocuments(filter);
+
+  res.send(createResponse({ 
+    data: applications,
+    page: pageNumber,
+    limit: pageLimit,
+    totalPages: Math.ceil(totalCount / pageLimit),
+    totalCount
+ }));
 }

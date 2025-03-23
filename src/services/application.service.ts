@@ -58,7 +58,10 @@ export const updateApplication = async (id: string, data: Partial<IApplication>)
     return await Application.findByIdAndUpdate(id, data, { new: true });
 };
 
-export const getResumes = async () => {
-    const applications = await Application.find({isCreatedByAdmin: true}).populate('resume');
+export const getResumes = async (filter: any, pageNumber: number, pageLimit: number) => {
+    const applications = await Application.find(filter).lean().populate('resume')
+    .skip((pageNumber - 1) * pageLimit)
+    .limit(pageLimit)
+    .exec();
     return applications;
 }

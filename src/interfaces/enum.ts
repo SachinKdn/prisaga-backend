@@ -26,6 +26,14 @@ export enum JobLevel {
     SR_MANAGER = "12-15 Yr. Sr. Manager / AVP",
     DIRECTOR = "15+ Yr. Director / VP"
 }
+export enum ExperienceLevel {
+    ENTRY = "0",
+    ASSOCIATE = "1",
+    SR_ASSOCIATE = "4",
+    MANAGER = "8",
+    SR_MANAGER = "12",
+    DIRECTOR = "15"
+}
 export enum JobType {
     FREELANCE = "Freelance",
     PART_TIME = "Part-time",

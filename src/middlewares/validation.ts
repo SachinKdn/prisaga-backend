@@ -22,7 +22,6 @@ export const validate = (validationName: string): any[] => {
       return createUser;
     }
     case "users:createMember": {
-      console.log("Sahi")
       return createMemberUser;
     }
     // case "users:create-with-link": {

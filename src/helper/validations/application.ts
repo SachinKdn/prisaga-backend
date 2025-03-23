@@ -175,6 +175,12 @@ export const createResume = [
   .bail()
   .notEmpty()
   .withMessage("Area Of Expertise must not be empty"),
+  check("experience")
+  .exists()
+  .withMessage("Experience is required")
+  .bail()
+  .notEmpty()
+  .withMessage("Experience must not be empty"),
   check("linkedin")
   .exists()
   .withMessage("LinkedIn is required")

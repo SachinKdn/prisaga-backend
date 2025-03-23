@@ -16,7 +16,7 @@ export const vendorDataSchema = new Schema<IVendorData>({
 const JobSchema: Schema = new Schema<IJob>({
   referenceId: { type: String, required: true, unique: true },
     title: { type: String, required: true },
-    description: { type: String, required: true }, // Assuming description is a string, change to `number` if needed
+    description: { type: String, required: true },
     company: { type: Schema.Types.ObjectId, ref: 'Company', required: true },
     skills: { type: [String], required: true },
     salaryFrom: { type: Number, required: true },

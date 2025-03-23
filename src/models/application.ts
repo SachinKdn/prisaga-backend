@@ -2,7 +2,7 @@ import mongoose, { Schema, Document } from "mongoose";
 import { ICompany } from "../interfaces/company";
 import { locationSchema } from "./user";
 import { IApplication } from "../interfaces/application";
-import { Department, JobLevel, JobStatus } from "../interfaces/enum";
+import { Department, ExperienceLevel, JobStatus } from "../interfaces/enum";
 
 export const ApplicationSchema = new Schema<IApplication>({
     firstName: { type: String, required: true },
@@ -23,7 +23,7 @@ export const ApplicationSchema = new Schema<IApplication>({
     },
     status: { type: String, enum: Object.values(JobStatus), required: true, default: JobStatus.PENDING },
     linkedin: { type: String, required: true },
-    experience: { type: String, enum: Object.values(JobLevel), required: true },
+    experience: { type: String, enum: Object.values(ExperienceLevel), required: true },
     summary: { type: String, required: false },
     areaOfExpertise: { type: String, enum: Object.values(Department), required: true },
     isCreatedByAdmin: { type: Boolean, required: false, default: false },

@@ -78,7 +78,7 @@ export const updateApplication = async (req: Request, res: Response): Promise<vo
 
 };
 
-export const uploadFiles = async (req: Request, res: Response) : Promise<void>=> {
+export const uploadFile = async (req: Request, res: Response) : Promise<void>=> {
   try {
     const file = req.file as Express.Multer.File;
     if (!file) {

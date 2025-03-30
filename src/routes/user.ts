@@ -9,6 +9,7 @@ import {
   getAllUsers,
   resetPassword,
   createMember,
+  updateProfilePicture,
 } from "../controllers/user";
 import {
   catchError,
@@ -21,8 +22,12 @@ import passport from "passport";
 import { checkRole } from "../middlewares/checkRole";
 import { UserRole } from "../interfaces/enum";
 import { isUserToken } from "../services/passport-jwt";
+import multer from "multer";
 
 const router = Router();
+
+const storage = multer.memoryStorage(); // Use memory storage to keep file in memory
+const upload = multer({ storage: storage, limits: { fileSize: 10 * 1024 * 1024 } }); // Limit file size to 10MB
 
 router.post(
   "/login",
@@ -59,6 +64,11 @@ router.post(
 router.get(
   "/me",
   expressAsyncHandler(getMyProfile)
+);
+router.post(
+  "/updateProfilePic",
+  upload.single('file'),
+  expressAsyncHandler(updateProfilePicture)
 );
 router.put(
   "/update/:id",

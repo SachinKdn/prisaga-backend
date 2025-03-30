@@ -202,7 +202,7 @@ export const updateUser = async (
       delete updateData[field];
     }
   });
-  const user = await userService.updateUser(req.params.id, req.body);
+  const user = await userService.updateUser(req.params.id, updateData);
   if (!user) {
     throw createHttpError(404, {
       message: "User not found",
@@ -210,6 +210,47 @@ export const updateUser = async (
   }
   res.send(createResponse(user));
 };
+
+export const updateProfilePicture = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const file = req.file as Express.Multer.File;
+    if (!file) {
+        throw createHttpError(400, {
+            message: "No file uploaded."
+        });
+    }
+    const user = await userService.uploadAndUpdateImage(file, req.user?._id!)
+    if (!user) {
+      throw createHttpError(404, {
+        message: "User not found...",
+      });
+    }
+    res.send(
+      createResponse(user)
+    );
+  }catch (error) {
+    // Handle errors
+    console.error("Upload function error:", error);
+    if (error instanceof Error) {
+      res.status(500).send(
+        createResponse({
+          success: false,
+          message: error.message || "An error occurred during image upload"
+        })
+      );
+    } else {
+      res.status(500).send(
+        createResponse({
+          success: false,
+          message: "An unknown error occurred"
+        })
+      );
+    }
+  }
+}
 
 export const deleteUser = async (
   req: Request,

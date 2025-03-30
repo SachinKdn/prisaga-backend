@@ -1,17 +1,12 @@
 import { Request, Response } from "express";
 import createHttpError from "http-errors";
-
 import * as applicationService from "../services/application.service";
 import * as agencyService from "../services/agency.service";
 import { createResponse } from "../helper/response";
-import User from "../models/user";
 import { JobStatus, UserRole } from "../interfaces/enum";
-import Agency from "../models/agency";
-import fs from 'fs';
-import cloudinary from 'cloudinary';
-import Resume from "../models/resume";
 import Application from "../models/application";
 import { createResumeFilter } from "../utils/createResumeFilter";
+import { uploadFileInCloudinary } from '../services/application.service';
 
 
 export const createApplication = async (req: Request, res: Response) : Promise<void> => {
@@ -85,44 +80,20 @@ export const updateApplication = async (req: Request, res: Response): Promise<vo
 
 export const uploadFiles = async (req: Request, res: Response) : Promise<void>=> {
   try {
-    const options = {
-        port: process.env.PORT,
-        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,  // Replace with your Cloud name
-        api_key: process.env.CLOUDINARY_API_KEY,      // Replace with your API key
-        api_secret: process.env.CLOUDINARY_API_SECRET  // Replace with your API secret
-      }
     const file = req.file as Express.Multer.File;
     if (!file) {
         throw createHttpError(400, {
             message: "No file uploaded."
         });
     }
-    console.log(options)
-    cloudinary.v2.config(options);
-    const stream = cloudinary.v2.uploader.upload_stream(
-        { resource_type: 'raw', access_mode: 'public', public_id: `prisaga/${file.originalname.replace(/\s+/g, '_')}_${Date.now()}` }, // `resource_type: raw` for non-image files like PDFs
-        async (error, result) => {
-          if (error) {
-            throw createHttpError(400, {
-                message: `Error uploading to Cloudinary ${error.message}`
-            });
-          }
-          console.log(result)
-          const newResume = {
-            fileName: req.file?.originalname,
-            fileUrl: result?.secure_url,
-            publicId: result?.public_id
-          }
-          const resume = await Resume.create(newResume)
-          res.send(
-            createResponse({
-                message: 'File uploaded successfully!',
-                resume
-              })
-            );
-        }
-      );
-    stream.end(file.buffer);
+    const resume = await applicationService.uploadFileInS3(file)
+    // const resume = await applicationService.uploadFileInCloudinary(file)
+    res.send(
+      createResponse({
+          message: 'File uploaded successfully!',
+          resume
+      })
+    );
     }catch (error) {
       // Handle errors
       console.error("Upload function error:", error);

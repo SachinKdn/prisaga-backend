@@ -30,31 +30,10 @@ export const createCompany = [
     .withMessage("State must be a string")
     .notEmpty()
     .withMessage("State must not be empty"),
-    check("location.postalCode")
-    .exists()
-    .withMessage("Postal Code is required")
-    .bail()
-    .isInt()
-    .withMessage("Postal Code must be a number"),
     check("teamSize")
     .exists()
     .withMessage("TeamSize is required")
     .bail()
     .isInt()
-    .withMessage("TeamSize must be a number"),
-    check("linkedin")
-    .exists()
-    .withMessage("Linkedin is required")
-    .bail()
-    .notEmpty()
-    .withMessage("Linkedin must not be empty"),
-    check("website_url")
-    .exists()
-    .withMessage("Website_url is required")
-    .bail()
-    .notEmpty()
-    .withMessage("Website_url must not be empty")
-    .bail()
-    .isURL()
-    .withMessage("Website URL must be a vaid"),
+    .withMessage("TeamSize must be a number")
 ]

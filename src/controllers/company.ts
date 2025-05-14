@@ -14,9 +14,7 @@ export const createCompany = async (req: Request, res: Response) : Promise<void>
  const company = await companyService.createCompany(req.body);
 
  res.send(
-    createResponse({
-        company,
-    })
+    createResponse(company)
     );
 }
 

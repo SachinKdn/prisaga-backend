@@ -34,16 +34,54 @@ export const password = check("password")
   })
   .bail()
   .withMessage("Enter strong password i.e. Abc@123");
-
+  export const registerAgency = [
+    check("email")
+      .exists()
+      .withMessage("Email is required")
+      .notEmpty()
+      .bail()  
+      .withMessage("Email must not be empty")
+      .isEmail()
+      .bail()  
+      .withMessage("Enter a valid email")
+      .custom(async (value: string) => {
+        const user = await User.findOne({ email: value });
+        if (user) {
+          throw new Error("Email already registered");
+        }
+        return true;
+      }),
+    password,
+    check("phoneNumber")
+      .exists()
+      .withMessage("Mobile number is required")
+      .bail()  
+      .notEmpty()
+      .withMessage("Mobile number must not be empty")
+      .isLength({ min: 10, max: 10 })
+      .withMessage("Phone number must be between 10 digits"),
+    check("firstName")
+      .exists()
+      .withMessage("First Name is required")
+      .bail()  
+      .notEmpty()
+      .withMessage("First Name must not be empty"),
+    check("userBusinessType")
+      .exists()
+      .withMessage("User business type is required")
+      .bail()
+      .isString()
+      .withMessage("userBusinessType must be a string value"),
+  ];
 export const createUser = [
   check("email")
     .exists()
     .withMessage("Email is required")
     .notEmpty()
-    .bail()  // Stop checking further if email is empty
+    .bail()  
     .withMessage("Email must not be empty")
     .isEmail()
-    .bail()  // Stop checking further if it's not a valid email
+    .bail()  
     .withMessage("Enter a valid email")
     .custom(async (value: string) => {
       const user = await User.findOne({ email: value });
@@ -65,7 +103,7 @@ password,
   check("phoneNumber")
     .exists()
     .withMessage("Mobile number is required")
-    .bail()  // Stop checking further if phoneNumber is empty
+    .bail()  
     .notEmpty()
     .withMessage("Mobile number must not be empty")
     .isLength({ min: 10, max: 10 })
@@ -73,7 +111,7 @@ password,
   check("username")
     .exists()
     .withMessage("Username is required")
-    .bail()  // Stop checking further if email is empty
+    .bail()  
     .notEmpty()
     .withMessage("Username must not be empty")
     .custom(async (value: string) => {
@@ -89,7 +127,7 @@ export const createMemberUser = [
     .exists()
     .withMessage("Email is required")
     .notEmpty()
-    .bail()  // Stop checking further if email is empty
+    .bail()  
     .withMessage("Email must not be empty")
     .isEmail()
     .bail()  // Stop checking further if it's not a valid email
@@ -104,7 +142,7 @@ export const createMemberUser = [
   check("phoneNumber")
     .exists()
     .withMessage("Mobile number is required")
-    .bail()  // Stop checking further if phoneNumber is empty
+    .bail()  
     .notEmpty()
     .withMessage("Mobile number must not be empty")
     .isLength({ min: 10, max: 10 })
@@ -112,7 +150,7 @@ export const createMemberUser = [
   check("username")
     .exists()
     .withMessage("Username is required")
-    .bail()  // Stop checking further if email is empty
+    .bail()  
     .notEmpty()
     .withMessage("Username must not be empty")
     .custom(async (value: string) => {

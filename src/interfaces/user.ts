@@ -30,8 +30,11 @@ export interface IUser extends BaseSchema {
     password: string;
     role: UserRole;
     linkedin: string;
-    createdBy: string;
+    createdBy: mongoose.Types.ObjectId;
     isDeleted: boolean;
     isApproved: boolean;
+    isFreelancer: boolean;
     agency: mongoose.Types.ObjectId | null;
+    token: string;
+    token_expiration: number;
 }

@@ -12,7 +12,7 @@ export const locationSchema = new Schema<Location>({
   });
   
   const UserSchema = new Schema<IUser>({
-    firstName: { type: String, required: false },
+    firstName: { type: String, required: true },
     lastName: { type: String, required: false },
     email: { type: String, required: true, unique: true },
     phoneNumber: { type: String, required: true },
@@ -22,13 +22,19 @@ export const locationSchema = new Schema<Location>({
     password: { type: String, required: false },
     role: { type: String, enum: Object.values(UserRole), required: true, default: UserRole.USER },
     linkedin: { type: String, required: false },
-    createdBy: { type: String, required: false },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
     isDeleted: { type: Boolean, default: false },
     isApproved: { type: Boolean, default: false },
+    isFreelancer: { type: Boolean, default: false },
     agency: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Agency'
-    }
+    },
+    token: {type: String},
+    token_expiration: {type: Number}
   }, { timestamps: true });
 
 // // Hash the password before saving the user document
@@ -40,7 +46,6 @@ export const locationSchema = new Schema<Location>({
 // });
 UserSchema.pre("save", async function (next) {
     if (this.isModified("password")) {
-      console.log("Password Modified")
       this.password = await hashPassword(this.password);
     }
     next();

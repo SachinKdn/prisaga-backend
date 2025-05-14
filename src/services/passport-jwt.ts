@@ -10,6 +10,7 @@ import TokenSchema, { IToken } from "../models/token";
 import createHttpError from 'http-errors';
 import User from "../models/user";
 import { NextFunction, Request, Response } from "express";
+import { UserRole } from "../interfaces/enum";
 
 const isValidPassword = async function (value: string, password: string) {
     const compare = await bcrypt.compare(value, password);
@@ -28,7 +29,8 @@ const isValidPassword = async function (value: string, password: string) {
         async (token, done) => {
           try {
             console.log("try block - ", token.user)
-            done(null, token.user);
+            const user = await User.findById(token.user._id).populate('agency').lean()
+            done(null, user);
           } catch (error) {
             console.log("cathcy block")
             console.log(error)
@@ -54,8 +56,16 @@ const isValidPassword = async function (value: string, password: string) {
                 return;
               }
               const validate = await isValidPassword(password, user.password);
-              if (!validate) {
+              if (!validate || user.isDeleted) {
                 done(createError(401, "Invalid email or password"), false);
+                return;
+              }
+              if (!user.isApproved) {
+                done(createError(401, "User is not verified yet!"), false);
+                return;
+              }
+              if(user.role === UserRole.VENDOR && !user.agency){
+                done(createError(401, "User don't have agency"), false);
                 return;
               }
               const { password: _p, ...result } = user;
@@ -80,24 +90,25 @@ const isValidPassword = async function (value: string, password: string) {
      const expireAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
      await saveSessionToken( tokenData?._id || "" , { accessToken, expireAt, refreshToken })
      return {
-       user,
+      user,
       accessToken,
-       refreshToken
+      refreshToken
      };
    };
+  
+   
 
 
-export const decodeToken = (token: string): IUser => {
-  const jwtSecret = process.env.JWT_SECRET || "TOP_SECRET";
-  if (!jwtSecret) {
-    throw new Error("JWT_SECRET is not defined");
-  }
-
+export const decodeToken = (token: string): IUser | null => {
   try {
+    const jwtSecret = process.env.JWT_SECRET || "TOP_SECRET";
+    if (!jwtSecret) {
+    throw new Error("JWT_SECRET is not defined");
+    }
     const decoded = jwt.verify(token, jwtSecret) as IUser;
     return decoded; 
   } catch (error) {
-    throw new Error("Invalid token");
+    return null;
   }
 };
 
@@ -134,7 +145,6 @@ export const isUserToken = async (
     // Get the token from the authorization header
     const authHeader = req.headers.authorization;
     const token = authHeader?.startsWith('Bearer ') ? authHeader.substring(7) : null;
-    console.log("Welcome to isUserToken")
     // If no token is provided, return a 401 error
     if (!token) {
       res.status(401).json({
@@ -166,9 +176,9 @@ export const isUserToken = async (
     }
 
     // Find the user by ID and ensure they are not deleted
-    console.log( req.user._id)
+  
     const user: IUser | null = await userService.getUserById(req.user?._id!);
-  console.log("user", user)
+
     if (!user) {
       res.status(404).json({
         success: false,
@@ -190,3 +200,34 @@ export const isUserToken = async (
     });
   }
 };
+
+
+export const createTokenInUser = async (user: Omit<IUser, "password">) => {
+  const tokenData = {
+    _id: user._id,
+    role: user?.role,
+  };
+   const jwtSecret = process.env.JWT_SECRET || "TOP_SECRET";
+   const accessToken = jwt.sign({ user: tokenData }, jwtSecret, { expiresIn: '15m' });
+   const token_expiration = Date.now() + 15 * 60 * 1000;
+   await User.findByIdAndUpdate(tokenData?._id, { "$set": { token: accessToken, token_expiration } }).lean();
+   return {
+    user,
+    accessToken,
+   };
+ };
+
+ export const createTokenWithInUser = async (user: Omit<IUser, "password">) => {
+  const tokenData = {
+    _id: user._id,
+    role: user?.role,
+  };
+   const jwtSecret = process.env.JWT_SECRET || "TOP_SECRET";
+   const accessToken = jwt.sign({ user: tokenData }, jwtSecret, { expiresIn: '15m' });
+   const token_expiration = Date.now() + 15 * 60 * 1000;
+   await User.findByIdAndUpdate(tokenData?._id, { "$set": { token: accessToken, token_expiration } }).lean();
+   return {
+    user,
+    accessToken,
+   };
+ };

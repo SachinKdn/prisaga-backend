@@ -1,8 +1,8 @@
 import moment from "moment";
-import { Department, JobLevel, JobType } from "../interfaces/enum";
+import { AreaOfExpertises, ExperienceLevel, JobType } from "../interfaces/enum";
 
 export function createJobFilter(query: any): any {
-    const { isActive , jobType, jobLevel, department, skills, salaryFrom, experienceFrom, postedDateWithin, referenceId, search, isDeleted = false } = query;
+    const { isActive , jobType, areaOfExpertise, skills, salaryFrom, experienceFrom, postedDateWithin, referenceId, search, isDeleted = false } = query;
     const filter: any = {};
     filter.isDeleted = isDeleted;
     
@@ -12,18 +12,15 @@ export function createJobFilter(query: any): any {
     if (jobType && Object.values(JobType).includes(jobType as JobType)) {
         filter.jobType = jobType;
     }
-    if (jobLevel && Object.values(JobLevel).includes(jobLevel as JobLevel)) {
-        filter.jobLevel = jobLevel;
-    }
-    if (department) {
-        // Ensure department is a valid enum and can handle both string and array input
-        const departments = Array.isArray(department) ? department : [department];
+    if (areaOfExpertise) {
+        // Ensure areaOfExpertise is a valid enum and can handle both string and array input
+        const areaOfExpertisesArray = Array.isArray(areaOfExpertise) ? areaOfExpertise : [areaOfExpertise];
 
-        // Validate the departments against the enum values
-        const validDepartments = departments.filter(dep => Object.values(Department).includes(dep as Department));
+        // Validate the areaOfExpertisesArray against the enum values
+        const validArea = areaOfExpertisesArray.filter(area => Object.values(AreaOfExpertises).includes(area as AreaOfExpertises));
 
-        if (validDepartments.length > 0) {
-            filter.department = { $in: validDepartments }; // Match any of the valid departments
+        if (validArea.length > 0) {
+            filter.areaOfExpertise = { $in: validArea }; // Match any of the valid areaOfExpertise
         }
     }
     if (skills) {
@@ -43,8 +40,8 @@ export function createJobFilter(query: any): any {
     if (experienceFrom) {
         const experienceFromNum = parseFloat(experienceFrom as string);
         filter.$and = [
-            { experienceFrom: { $lte: experienceFromNum } },
-            { experienceTo: { $gte: experienceFromNum } }  
+            { experienceFrom: { $gte: experienceFromNum } },
+            // { experienceTo: { $gte: experienceFromNum } }  
         ];
     }
     if (postedDateWithin) {
@@ -62,6 +59,7 @@ export function createJobFilter(query: any): any {
         filter.$or = [
             { referenceId: { $regex: searchRegex } },
             { title: { $regex: searchRegex } },
+            { description: { $regex: searchRegex } },
           ]
     }
     return filter;

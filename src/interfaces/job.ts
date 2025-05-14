@@ -1,17 +1,19 @@
 import { BaseSchema } from "../helper/response";
 import { ICompany } from "./company";
-import { Department, JobLevel, JobType, SubscriptionType } from "./enum";
+import { AreaOfExpertises, ExperienceLevel, JobApplicationStatus, JobStatus, JobType } from "./enum";
 import { Location } from "./location";
+import { IUser } from "./user";
 
 export interface IQuestionnaire {
     question: string;
-    answer: string;
+    answer?: string;
 }
 
 export interface IVendorData {
-    premiumFee: string;
-    premiumProFee: string;
-    amount: string;
+    basicFeePercentage: number;
+    premiumFeePercentage: number;
+    basicBillingAmount: number;
+    premiumBillingAmount: number;
 }
 
 export interface IJob extends BaseSchema{
@@ -21,20 +23,21 @@ export interface IJob extends BaseSchema{
     description: string;
     company: ICompany;
     skills: string[];
+    jobInsights: string[];
     salaryFrom: number;
     salaryTo: number;
     noOfOpenings: number;
     jobType: JobType;
-    jobLevel: JobLevel;
     experienceFrom:number;
     experienceTo:number;
     isDeleted: boolean;
-    createdBy: string;
-    noticePeriod: string;
+    createdBy: IUser;
     location: Location;
     isActive: boolean;
-    department: Department;
+    areaOfExpertise: AreaOfExpertises;
     noOfApplications: number;
     questionnaire: IQuestionnaire[];
     vendorData: IVendorData;
+    minQualification: string;
+    jobStatus: JobStatus;
 }

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import createHttpError from 'http-errors';
 import { SubscriptionType, UserRole } from '../interfaces/enum';
 import Agency from '../models/agency';
+import User from '../models/user';
 
 /**
  * Middleware to check if the authenticated user has one of the allowed roles.
@@ -10,11 +11,11 @@ import Agency from '../models/agency';
 export const checkSubscription = (allowedSubscriptionType?: SubscriptionType[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     if(req.user?.role === UserRole.VENDOR){
-      const agency = await Agency.findById(req.user?.agency).lean()
-      console.log("request agency--", agency);
+      const currentUser = await User.findById(req.user?._id).populate('agency').lean()
+      const agency = await Agency.findById(currentUser?.agency?._id).lean()
   
       if (!agency) {
-        return next(createHttpError(404, { message: 'Agency is not found' }));
+        return next(createHttpError(400, { message: "Permission denied! You are not under any agency." }));
       }
   
       if (agency.subscriptionType === SubscriptionType.FREE) {

@@ -1,19 +1,19 @@
-import moment from "moment";
-import { Department } from "../interfaces/enum";
+
+import { AreaOfExpertises } from "../interfaces/enum";
 
 export function createCompanyFilter(query: any): any {
-    const {  department, search } = query;
+    const {  areaOfExpertise, search } = query;
     const filter: any = {};
 
-    if (department) {
-        // Ensure department is a valid enum and can handle both string and array input
-        const departments = Array.isArray(department) ? department : [department];
+    if (areaOfExpertise) {
+        // Ensure AreaOfExpertises is a valid enum and can handle both string and array input
+        const areaOfExpertisesArray = Array.isArray(areaOfExpertise) ? areaOfExpertise : [areaOfExpertise];
 
-        // Validate the departments against the enum values
-        const validDepartments = departments.filter(dep => Object.values(Department).includes(dep as Department));
+        // Validate the AreaOfExpertises against the enum values
+        const validAreaOfExpertises = areaOfExpertisesArray.filter(area => Object.values(AreaOfExpertises).includes(area as AreaOfExpertises));
 
-        if (validDepartments.length > 0) {
-            filter.department = { $in: validDepartments }; // Match any of the valid departments
+        if (validAreaOfExpertises.length > 0) {
+            filter.areaOfExpertise = { $in: validAreaOfExpertises }; // Match any of the valid AreaOfExpertises
         }
     }
     if(search){

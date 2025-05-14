@@ -2,11 +2,11 @@ import { type Response, type Request, type NextFunction } from "express";
 import expressAsyncHandler from "express-async-handler";
 import { validationResult } from "express-validator";
 import createHttpError from "http-errors";
-import { createMemberUser, createUser, password, userLogin } from "../helper/validations/user";
-import { createAgency, toggleAllocateJobId } from "../helper/validations/agency";
+import { createMemberUser, createUser, password, registerAgency, userLogin } from "../helper/validations/user";
+import { createAgency, subscriptionSelection, toggleJobCategoryId } from "../helper/validations/agency";
 import { createCompany } from "../helper/validations/company";
 import { createJob } from "../helper/validations/job";
-import { createApplication, createResume } from "../helper/validations/application";
+import { checkCandidate, createApplication, createResume } from "../helper/validations/application";
 import mongoose from "mongoose";
 
 
@@ -21,6 +21,9 @@ export const validate = (validationName: string): any[] => {
     case "users:create": {
       return createUser;
     }
+    case "users:agency-register": {
+      return registerAgency;
+    }
     case "users:createMember": {
       return createMemberUser;
     }
@@ -32,8 +35,14 @@ export const validate = (validationName: string): any[] => {
     case "agency:create": {
       return createAgency;
     }
+    case "agency:update": {
+      return createAgency;
+    }
+    case "agency:subscriptionSelection": {
+      return subscriptionSelection;
+    }
     case "agency:toggleJob": {
-      return toggleAllocateJobId;
+      return toggleJobCategoryId;
     }
     case "company:create": {
       return createCompany;
@@ -43,6 +52,9 @@ export const validate = (validationName: string): any[] => {
     }
     case "application:create": {
       return createApplication;
+    }
+    case "application:checkCandidate": {
+      return checkCandidate;
     }
     case "resume:create": {
       return createResume;

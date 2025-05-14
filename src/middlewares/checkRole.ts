@@ -11,7 +11,7 @@ export const checkRole = (allowedRoles: UserRole[]) => {
     const user = req.user; // Passport JWT adds the user object to the request
 
     if (!user) {
-      return next(createHttpError(401, { message: 'User is unauthorized' }));
+      return next(createHttpError(403, { message: 'User is unauthorized' }));
     }
 
     if (!allowedRoles.includes(user.role)) {

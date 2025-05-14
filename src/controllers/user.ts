@@ -7,7 +7,27 @@ import { IUser } from "../interfaces/user";
 import { SubscriptionType, UserRole } from "../interfaces/enum";
 import Agency from "../models/agency";
 import User from "../models/user";
-const restrictedFields = ["password", "email", "role"];
+import { generateUsernameFromEmail } from "../utils/generateUsername";
+
+export const registerAgencyVendor = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  req.body = {
+    ...req.body,
+    isFreelancer: req.body.userBusinessType === 'Freelancer',
+    agency: null,
+    isApproved: false,
+    username: generateUsernameFromEmail(req.body.email),
+    role: UserRole.VENDOR,
+  }
+  const user = await userService.createAgencyMainMember(req.body);
+
+  await userService.sendConfirmationLink(user._id, user.email);
+  res.send(
+    createResponse(user)
+  );
+};
 export const createUser = async (
   req: Request,
   res: Response
@@ -60,69 +80,68 @@ export const createMember = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  // if(req.body.role === "SUPERADMIN"){
-  // throw createHttpError(400, {
-  //     message: "Permission denied!"
-  // });
-  // }
-  const currentUser = req.user;
-  if (!currentUser) {
-    throw createHttpError(403, {
-      message: "Permission denied!",
+  if(req.body.role === "SUPERADMIN"){
+    throw createHttpError(400, {
+        message: "Permission denied!"
     });
   }
+  const currentUser = req.user!;
   if (currentUser?.role === UserRole.SUPERADMIN) {
     req.body.role = UserRole.ADMIN;
-  } else {
+  } else if(currentUser?.role === UserRole.VENDOR) {
     req.body.role = UserRole.VENDOR;
     const agency = await Agency.findById(currentUser.agency).lean();
     if (!agency)
       throw createHttpError(400, { message: "Your reference Id is incorrect" });
-    // if(agency.subscriptionType === SubscriptionType.FREE) throw createHttpError(400, { message: "Please upgrade your account" });
-    const vendorLimit = Number(process.env.VENDOR_MEMBER_LIMIT || 3);
-    if (agency.activeUsers >= vendorLimit)
-      throw createHttpError(400, { message: "Your Limit is reached" });
+    if(agency.subscriptionType === SubscriptionType.FREE) throw createHttpError(403, { message: "Please upgrade your account" });
+    if (agency.activeUsers >= agency.maxUserCounts)
+      throw createHttpError(403, { message: "Your Limit is reached" });
     await Agency.findByIdAndUpdate(
-      req.body.agency,
+      agency._id,
       { $inc: { activeUsers: 1 } },
       { new: true }
     );
 
-    req.body.role = agency._id;
+    req.body.agency = agency._id;
   }
   req.body.createdBy = currentUser._id;
   req.body.isApproved = false;
 
   console.log("create");
   const user = await userService.createAndInviteUser(req.body);
+  
 
   res.send(createResponse(user));
 };
+export const verifyToken = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const token = req.params.token;
+  const user = await userService.verifyToken(token);
 
+  res.send(
+    createResponse(user)
+  );
+}
 export const resetPassword = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   const token = req.params.token;
-  const user = await decodeToken(token);
+  const user = await userService.verifyTokenAndUpdate(token);
   if (!user) {
-    throw createHttpError(403, {
-      message: "Token is invalid",
-    });
-  }
-  console.log("user decoded---", user);
-  const password = req.body.password;
+      throw createHttpError(403, {
+        message: "Token is invalid",
+      });
+    }
   const newUser = await User.findById(user._id);
   if (!newUser) {
-    throw createHttpError(404, {
-      message: "User not found",
-    });
-  }
-  if (newUser.isApproved) {
-    throw createHttpError(403, {
-      message: "User is already registered",
-    });
-  }
+      throw createHttpError(403, {
+        message: "User is already registered",
+      });
+    }
+  const password = req.body.password;
   newUser.password = password;
   newUser.isApproved = true;
   await newUser.save();
@@ -148,11 +167,9 @@ export const getUser = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const getMyProfile = async (req: Request, res: Response) => {
-  console.log("req");
   // const user = await User.findById(req.user?._id).select("-password");
   // res.send(createResponse(user, "User details feteched successfully!"));
   const user: IUser | null = await userService.getUserById(req.user?._id!);
-  console.log("user", user)
   if (!user) {
     throw createHttpError(404, {
       message: "User profile not found",
@@ -170,7 +187,13 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     });
   }
   if (user && user.role === UserRole.VENDOR) {
-    user = await User.findById(req.user?._id).populate("agency");
+    user = await User.findById(req.user?._id).populate({ 
+      path: 'agency',
+      populate: {
+        path: 'createdBy',
+        model: 'User'
+      } 
+   });
     const { password, ...userWithoutPassword } = user.toObject();
     user = userWithoutPassword;
   }
@@ -197,6 +220,8 @@ export const updateUser = async (
 ): Promise<void> => {
   const updateData = { ...req.body };
   // Remove restricted fields from the update data
+  
+const restrictedFields = ["password", "email", "role"];
   restrictedFields.forEach((field) => {
     if (updateData.hasOwnProperty(field)) {
       delete updateData[field];
@@ -263,11 +288,11 @@ export const deleteUser = async (
   }
 
   if (
-    (user.role === UserRole.VENDOR &&
-      req.user?.role !== UserRole.ADMIN &&
-      req.user?.role !== UserRole.SUPERADMIN) ||
-    user.role === UserRole.SUPERADMIN ||
-    (user.role === UserRole.ADMIN && req.user?.role !== UserRole.SUPERADMIN)
+    req.user?.role !== UserRole.SUPERADMIN && 
+    (
+      req.user?.role === UserRole.ADMIN ||
+      (req.user?.role === UserRole.VENDOR && user.role !== UserRole.VENDOR)
+    )
   ) {
     throw createHttpError(403, {
       message: "Permission denied!",
@@ -285,7 +310,6 @@ export const getAllUsers = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  console.log("Welcome to hit the getAllUsers API");
   const { page = 1, limit = 10, role, isDeleted = false } = req.query;
   const pageNumber = parseInt(page as string, 10);
   const pageLimit = parseInt(limit as string, 10);
@@ -295,16 +319,15 @@ export const getAllUsers = async (
     filter.role = role;
   }
   filter.isDeleted = isDeleted;
-
   const skip = (pageNumber - 1) * pageLimit;
-  // console.log(filter,"<====filter")
   if (req.user?.role === UserRole.VENDOR) {
+    filter.agency = req.user?.agency;
     filter.role = UserRole.VENDOR;
   } else {
-    filter.role = [UserRole.ADMIN, UserRole.SUPERADMIN];
+    filter.role = [UserRole.ADMIN];
   }
+    console.log("filere--=-=-===-=-\n\n\n\n", filter)
   const users = await User.find(filter)
-    .populate("agency")
     .skip(skip)
     .limit(pageLimit)
     .sort({ createdAt: -1 });

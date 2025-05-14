@@ -1,4 +1,4 @@
-import { Department, ExperienceLevel } from "../interfaces/enum";
+import { AreaOfExpertises, ExperienceLevel } from "../interfaces/enum";
 
 
 
@@ -10,7 +10,7 @@ export function createResumeFilter(query: any): any {
     if (experience && Object.values(ExperienceLevel).includes(experience as ExperienceLevel)) {
         filter.experience = experience;
     }
-    if (areaOfExpertise && Object.values(Department).includes(areaOfExpertise as Department)) {
+    if (areaOfExpertise && Object.values(AreaOfExpertises).includes(areaOfExpertise as AreaOfExpertises)) {
         filter.areaOfExpertise = areaOfExpertise;
     }
     if(search){

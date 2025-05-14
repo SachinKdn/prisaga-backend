@@ -5,15 +5,24 @@ import { UserRole } from "../interfaces/enum";
  import { IUser } from "../interfaces/user"; 
 import Agency from "../models/agency";
 import User from "../models/user";
-import { resetPasswordEmailTemplate, sendEmail } from "../utils/sendMail";
-import { createUserTokens } from "./passport-jwt";
+import { confirmationAgencyEmailTemplate, resetPasswordEmailTemplate, sendEmail } from "../utils/sendMail";
+import { createTokenInUser, createUserTokens, decodeToken } from "./passport-jwt";
+import createHttpError from 'http-errors';
+import jwt from 'jsonwebtoken';
+import mongoose from "mongoose";
 
 export const getUserByEmail = async (email: string) => {
     console.log("finding user by mail")
     const user = await User.findOne({ email: email }).lean();
     return user;
   };
+export const createAgencyMainMember = async (userData: IUser) => {
+  const user = await User.create(userData);
+  user.createdBy =  new mongoose.Types.ObjectId(user._id);
+  await user.save();
 
+  return user;
+}
 export const createUser = async (userData: IUser) => {
     let user = await User.create(userData);
     console.log("\n\n\n createUser------>", user);
@@ -39,7 +48,22 @@ export const createUser = async (userData: IUser) => {
     }
     return result;
 };
-
+export const sendConfirmationLink = async (userId: string, email: string) => {
+  const tokenData = {
+    _id: userId
+  };
+  const jwtSecret = process.env.JWT_SECRET || "TOP_SECRET";
+    const accessToken = jwt.sign({ user: tokenData }, jwtSecret, { expiresIn: '7d' });
+    const token_expiration = Date.now() + 7 * 24 * 60 * 60 * 1000;
+    await User.findByIdAndUpdate(tokenData?._id, { "$set": { token: accessToken, token_expiration } }).lean();
+    const result = await sendEmail({
+        to: email,
+        subject: "Confirmation mail from Prisaga Consulting Pvt. Ltd.",
+        html: confirmationAgencyEmailTemplate(accessToken),
+        });
+    console.log("Email sent successfully....")
+    return result;
+}
 export const createAndInviteUser = async (userData: IUser) => {
     let user = await User.create(userData);
     console.log("\n\n\n createUser------>", user);
@@ -53,11 +77,16 @@ export const createAndInviteUser = async (userData: IUser) => {
     //     } else {
     //         result.agency = null;
     //     }
-
-        
     // }
     console.log("New user result---", result)
-    const { accessToken } = await createUserTokens(result);
+    const tokenData = {
+        _id: user._id,
+        role: user?.role,
+      };
+    const jwtSecret = process.env.JWT_SECRET || "TOP_SECRET";
+    const accessToken = jwt.sign({ user: tokenData }, jwtSecret, { expiresIn: '7d' });
+    const token_expiration = Date.now() + 7 * 24 * 60 * 60 * 1000;
+    await User.findByIdAndUpdate(tokenData?._id, { "$set": { token: accessToken, token_expiration } }).lean();
     await sendEmail({
         to: user!.email,
         subject: "Reset password at Prisaga Consulting Pvt. Ltd.",
@@ -68,8 +97,55 @@ export const createAndInviteUser = async (userData: IUser) => {
 };
 
 export const getUserById = async (id: string): Promise<IUser | null> => {
-    console.log(id)
-    return await User.findById(id).populate('agency');
+  const res = await User.findById(id).populate({ 
+    path: 'agency',
+    populate: {
+      path: 'createdBy',
+      model: 'User'
+    } 
+ });
+  console.log('createdBy res-->', res)
+    return res;
+};
+
+export const verifyToken = async (token: string): Promise<IUser | null> => {
+  const decodedUser = await decodeToken(token);
+  if (!decodedUser) {
+    throw createHttpError(403, {
+      message: "Token is invalid",
+    });
+  }
+  
+  const user = await User.findOne({ token });
+  if (!user) {
+    throw createHttpError(404, { message: 'Invalid or expired token' });
+  }
+  if ( user.token_expiration < Date.now()) {
+    throw createHttpError(401, { message: 'Invalid or expired token' });
+  }
+  return user;
+};
+
+export const verifyTokenAndUpdate = async (token: string): Promise<IUser | null> => {
+    const decodedUser = await decodeToken(token);
+    if (!decodedUser) {
+      throw createHttpError(403, {
+        message: "Token is invalid",
+      });
+    }
+    
+    const user = await User.findOne({ token });
+    if (!user) {
+      throw createHttpError(404, { message: 'Invalid or expired token' });
+    }
+    if ( user.token_expiration < Date.now()) {
+      throw createHttpError(401, { message: 'Invalid or expired token' });
+    }
+    user.token_expiration = 0;
+    user.token = '';
+    user.isApproved = true;
+    await user.save();
+    return user;
 };
 
 export const updateUser = async (id: string, userData: Partial<IUser>): Promise<IUser | null> => {

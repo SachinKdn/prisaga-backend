@@ -10,6 +10,8 @@ import {
   resetPassword,
   createMember,
   updateProfilePicture,
+  verifyToken,
+  registerAgencyVendor,
 } from "../controllers/user";
 import {
   catchError,
@@ -39,10 +41,21 @@ router.post(
 
 // public routes
 router.post(
+  "/agency-register",
+  validate("users:agency-register"),
+  catchError,
+  expressAsyncHandler(registerAgencyVendor)
+);
+router.post(
   "/register",
   validate("users:create"),
   catchError,
   expressAsyncHandler(createUser)
+);
+router.post(
+  "/verifyToken/:token",
+  catchError,
+  expressAsyncHandler(verifyToken)
 );
 router.post(
   "/resetPassword/:token",
@@ -79,7 +92,7 @@ router.delete(
   "/:id",
   validateIdParam("id"),
   catchError,
-  checkRole([UserRole.VENDOR, UserRole.ADMIN, UserRole.SUPERADMIN]),
+  checkRole([UserRole.VENDOR,  UserRole.SUPERADMIN]),
   expressAsyncHandler(deleteUser)
 );
 

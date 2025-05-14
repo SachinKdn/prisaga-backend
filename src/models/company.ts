@@ -7,8 +7,8 @@ export const CompanySchema = new Schema<ICompany>({
     location: { type: locationSchema, required: true },
     logo: { type: String, required: false },
     teamSize: { type: Number, required: true },
-    linkedin: { type: String, required: true },
-    website_url: { type: String, required: true },
+    linkedin: { type: String, required: false },
+    website_url: { type: String, required: false },
     createdBy: { type: String, required: true },
   }, { timestamps: true });
 

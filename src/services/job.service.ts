@@ -15,7 +15,7 @@ export const updateJob = async (id: string, data: Partial<IJob>): Promise<IJob |
   return await Job.findByIdAndUpdate(id, data, { new: true });
 };
 export const getAllJobs = async (filter: any, pageNumber: number, pageLimit: number): Promise<IJob[] | null> => {
-    const jobs = await Job.find(filter).lean().populate("company")
+    const jobs = await Job.find(filter).sort({createdAt: -1}).lean().populate("company")
             .skip((pageNumber - 1) * pageLimit) // Skip for pagination
             .limit(pageLimit) // Limit for pagination
             .exec();
@@ -24,7 +24,7 @@ export const getAllJobs = async (filter: any, pageNumber: number, pageLimit: num
 
 
 export const getJobByReferenceId= async (referenceId: string): Promise<IJob | null> => {
-    const job = await Job.findOne({referenceId}).lean().populate("company").lean();
+    const job = await Job.findOne({referenceId}).lean().populate(["company", "location", "vendorData", "createdBy"]).lean();
     console.log("jobs------>-", job)
     return job;
 };

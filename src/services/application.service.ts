@@ -1,5 +1,5 @@
 import { IApplication } from "../interfaces/application";
-import { JobStatus } from "../interfaces/enum";
+import { JobApplicationStatus } from "../interfaces/enum";
 import Application from "../models/application";
 import cloudinary from 'cloudinary';
 import Job from "../models/job";
@@ -7,15 +7,45 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
 import createHttpError from "http-errors";
 import Resume from "../models/resume";
+import mongoose from "mongoose";
 
 
+export const getApplication = async (email: string, phoneNumber: string, jobId: string) => {
+    const filter = {
+        $or: [
+            { email: email },
+            { phoneNumber: phoneNumber }
+        ]
+    };
+    const applications = await Application.find(filter).populate('resume').populate('createdByAgency').populate('createdBy');
+    if (applications.length === 0) {
+        return {
+          applications: [],
+          isAlreadyApplied: false
+        };
+      }
+    
+    const jobObjectId = new mongoose.Types.ObjectId(jobId);
+    const alreadyApplied = applications.some(app => app.job?.toString() === jobObjectId.toString());
+
+    if (alreadyApplied) {
+        return {
+        applications: [],
+        isAlreadyApplied: true
+        };
+    }
+    return {
+        applications,
+        isAlreadyApplied: false
+      };
+}
 
 export const createApplication = async (data: IApplication) => {
     const application = (await Application.create(data)).populate('resume');
     return application;
 }
 
-export const getApplication = async (applicationId : string) => {
+export const getApplicationById = async (applicationId : string) => {
     const application =  await Application.findById(applicationId).populate('resume').populate('createdByAgency').populate('createdBy');
     if(!application){
         throw createHttpError(404, {
@@ -47,7 +77,7 @@ export const getApplications = async (jobId : string) => {
 }
 
 export const updateStatus = async (id: string, data: string): Promise<IApplication | null> => {
-    if(!Object.values(JobStatus).includes(data as JobStatus)){
+    if(!Object.values(JobApplicationStatus).includes(data as JobApplicationStatus)){
         throw createHttpError(400, {
             message: "Job status is invalid"
         });
@@ -59,13 +89,6 @@ export const updateApplication = async (id: string, data: Partial<IApplication>)
     return await Application.findByIdAndUpdate(id, data, { new: true });
 };
 
-export const getResumes = async (filter: any, pageNumber: number, pageLimit: number) => {
-    const applications = await Application.find(filter).lean().populate('resume')
-    .skip((pageNumber - 1) * pageLimit)
-    .limit(pageLimit)
-    .exec();
-    return applications;
-}
 
 export const uploadFileInS3 = async (file: Express.Multer.File)=>{
     const s3Client = new S3Client({

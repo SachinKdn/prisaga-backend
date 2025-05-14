@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { IAgency } from "../interfaces/agency";
 import { locationSchema } from "./user";
-import { Department, JobLevel, SubscriptionType } from "../interfaces/enum";
+import { AreaOfExpertises, ExperienceLevel, SubscriptionType } from "../interfaces/enum";
 
 
 
@@ -19,13 +19,17 @@ const AgencySchema = new Schema<IAgency>({
     description: { type: String, required: false },
     teamSize: { type: Number, required: false, default: 1 },
     isBulkHiring: { type: Boolean, default: false },
-    department: { type: [String], enum: Object.values(Department), required: false },
-    areaOfExpertise: { type: String, required: false },
-    targetJobLevel: { type: [String], enum: Object.values(JobLevel), required: false },
+    areaOfExpertise: { type: [String], enum: Object.values(AreaOfExpertises), required: false },
+    targetJobLevel: { type: [String], enum: Object.values(ExperienceLevel), required: false },
     isChargeToCandidate: { type: Boolean, default: false },
     linkedin: { type: String, required: false },
 
     allocatedJobIds: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: 'Job',
+        default: []
+    },
+    deallocatedJobIds: {
         type: [mongoose.Schema.Types.ObjectId],
         ref: 'Job',
         default: []
@@ -38,9 +42,10 @@ const AgencySchema = new Schema<IAgency>({
 
 
     subscriptionType: { type: String, enum: Object.values(SubscriptionType), default: SubscriptionType.FREE },
-    totalRequest: { type: Number, required: false, default: 5 },
+    maxUserCounts: { type: Number, required: false, default: 1 },
+    totalRequest: { type: Number, required: false, default: 0 },
     spentRequest: { type: Number, required: false, default: 0 },
-    allocatedJobs: { type: Number, required: false, default: 0 },
+    subscriptionExpirationDate: {type: Number, required: false}
 }, { timestamps: true });
 
 

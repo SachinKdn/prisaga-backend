@@ -2,8 +2,25 @@ import mongoose, { Schema, Document } from "mongoose";
 import { ICompany } from "../interfaces/company";
 import { locationSchema } from "./user";
 import { IApplication } from "../interfaces/application";
-import { Department, ExperienceLevel, JobStatus } from "../interfaces/enum";
-
+import { AreaOfExpertises, ExperienceLevel, JobApplicationStatus } from "../interfaces/enum";
+import { Salary } from "../interfaces/salary";
+import { IQuestionnaire } from "../interfaces/job";
+export const salarySchema = new Schema<Salary>({
+    amount: { type: Number, required: false },
+    tenure: { type: String, required: true },
+    currency: { type: String, required: true },
+  });
+  const experienceSchema = new mongoose.Schema({
+    employer: { type: String, required: true },
+    jobProfile: { type: String, required: true },
+    location: { type: locationSchema, required: true },
+    jobPeriod: { type: String, required: true }
+  }, { _id: false });
+  
+export const questionnaireSchema = new Schema<IQuestionnaire>({
+    question: { type: String, required: true },
+    answer: { type: String, required: true },
+  });
 export const ApplicationSchema = new Schema<IApplication>({
     firstName: { type: String, required: true },
     lastName: { type: String, required: false },
@@ -21,13 +38,30 @@ export const ApplicationSchema = new Schema<IApplication>({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Resume'
     },
-    status: { type: String, enum: Object.values(JobStatus), required: true, default: JobStatus.PENDING },
+    status: { type: String, enum: Object.values(JobApplicationStatus), required: true, default: JobApplicationStatus.PENDING },
     linkedin: { type: String, required: false },
+    website: { type: String, required: false },
+    dob: { type: Date, required: true },
+    gender: { type: String, required: true },
+    qualifications:  { type: String, required: true },
+    currentSalary: { type: salarySchema, required: false },
+    expectedSalary: { type: salarySchema, required: true },
+    noticePeriod: { type: String, required: false },
+    isFresher: { type: Boolean, required: true },
+    isActive: { type: Boolean, required: true },
     experience: { type: String, enum: Object.values(ExperienceLevel), required: true },
     summary: { type: String, required: false },
-    areaOfExpertise: { type: String, enum: Object.values(Department), required: true },
+    diversityParameters: { type: [String], required: false },
+    diversityComments:  { type: String, required: false },
+    
+    areaOfExpertise: { type: String, enum: Object.values(AreaOfExpertises), required: true },
     isCreatedByAdmin: { type: Boolean, required: false, default: false },
     skills: { type: [String], required: false },
+    experiences: [{type: experienceSchema, required: false}],
+    questionnaire: [{
+        type: questionnaireSchema,
+        required: true
+      }],
   }, { timestamps: true });
 
   

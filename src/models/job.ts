@@ -1,16 +1,17 @@
 import mongoose, { Schema } from "mongoose";
 import { IJob, IQuestionnaire, IVendorData } from "../interfaces/job";
-import { Department, JobLevel, JobType } from "../interfaces/enum";
+import { AreaOfExpertises, ExperienceLevel, JobStatus, JobType } from "../interfaces/enum";
 import { locationSchema } from "./user";
 
 export const questionnaireSchema = new Schema<IQuestionnaire>({
     question: { type: String, required: true },
-    answer: { type: String, required: true },
+    answer: { type: String, required: false },
   });
 export const vendorDataSchema = new Schema<IVendorData>({
-    premiumFee: { type: String, required: true },
-    premiumProFee: { type: String, required: true },
-    amount: { type: String, required: true },
+    basicFeePercentage: { type: Number, required: true },
+    premiumFeePercentage: { type: Number, required: true },
+    basicBillingAmount: { type: Number, required: true },
+    premiumBillingAmount: { type: Number, required: true },
   });
 
 const JobSchema: Schema = new Schema<IJob>({
@@ -19,19 +20,19 @@ const JobSchema: Schema = new Schema<IJob>({
     description: { type: String, required: true },
     company: { type: Schema.Types.ObjectId, ref: 'Company', required: true },
     skills: { type: [String], required: true },
+    jobInsights: { type: [String], required: true },
     salaryFrom: { type: Number, required: true },
     salaryTo: { type: Number, required: true },
     noOfOpenings: { type: Number, required: true },
     jobType: { type: String, enum: Object.values(JobType), required: true },
-    jobLevel: { type: String, enum: Object.values(JobLevel), required: true },
     experienceFrom: { type: Number, required: true },
     experienceTo: { type: Number, required: true },
     isDeleted: { type: Boolean, default: false },
-    createdBy: { type: String, required: true },
-    noticePeriod: { type: String, required: true },
+    createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     location: { type: locationSchema, required: true }, 
     isActive: { type: Boolean, default: true },
-    department: { type: String, enum: Object.values(Department), required: false },
+    areaOfExpertise: { type: String, enum: Object.values(AreaOfExpertises), required: false },
+    jobStatus: { type: String, enum: Object.values(JobStatus), required: true, default: JobStatus.ACTIVE },
     noOfApplications: { type: Number, default: 0 },
     questionnaire: [{
       type: questionnaireSchema,
@@ -40,7 +41,8 @@ const JobSchema: Schema = new Schema<IJob>({
     vendorData: {
       type: vendorDataSchema,
       required: true
-    }
+    },
+    minQualification: { type: String, required: true }
   }, { timestamps: true });
 
 

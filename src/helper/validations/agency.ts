@@ -1,5 +1,6 @@
 import { check } from "express-validator";
 import Job from "../../models/job";
+import { JobCategory, SubscriptionType, UserRole } from "../../interfaces/enum";
 
 
 export const createAgency = [
@@ -55,12 +56,6 @@ export const createAgency = [
     .optional()
     .isInt({ min: 1 })
     .withMessage("If provided, Team size must be a positive integer"),
-    check("description")
-    .optional()
-    .isString()
-    .withMessage("If provided, Description must be a string")
-    .notEmpty()
-    .withMessage("If provided, Description must not be empty"),
     check("teamSize")
     .optional()
     .isInt({ min: 1 })
@@ -71,15 +66,15 @@ export const createAgency = [
     .bail()
     .isBoolean()
     .withMessage("Bulk Hiring must be a boolean value"),
-    check("department")
+    check("areaOfExpertise")
     .exists()
-    .withMessage("Department is required")
+    .withMessage("Area Of Expertises is required")
     .bail()
     .isArray()
-    .withMessage("Department must be an array of job levels")
+    .withMessage("Area Of Expertises must be an array of job levels")
     .bail()
     .notEmpty()
-    .withMessage("Department array must not be empty"),
+    .withMessage("Area Of Expertises array must not be empty"),
     check("targetJobLevel")
     .exists()
     .withMessage("Target Job Level is required")
@@ -89,12 +84,6 @@ export const createAgency = [
     .bail()
     .notEmpty()
     .withMessage("Target Job Level array must not be empty"),
-    check("isChargeToCandidate")
-    .exists()
-    .withMessage("Charge to Candidate status is required")
-    .bail()
-    .isBoolean()
-    .withMessage("Charge to Candidate must be a boolean value"),
     check("linkedin")
     .exists()
     .withMessage("LinkedIn URL is required")
@@ -103,8 +92,16 @@ export const createAgency = [
     .withMessage("LinkedIn URL must be a valid URL")
 
 ]
-
-export const toggleAllocateJobId = [
+export const subscriptionSelection = [
+  check("subscriptionType")
+      .exists()
+      .withMessage("Subscription Type is required")
+      .notEmpty()
+      .bail() 
+      .withMessage("Subscription Type must not be empty")
+      .isIn(Object.values(SubscriptionType))
+]
+export const toggleJobCategoryId = [
     check("jobId")
     .exists()
     .withMessage("Job Id is required")
@@ -117,5 +114,13 @@ export const toggleAllocateJobId = [
           throw new Error("Job Id is incorrect");
         }
         return true;
-      })
+      }),
+      check("category")
+      .exists()
+      .withMessage("Job Category is required")
+      .notEmpty()
+      .bail() 
+      .withMessage("Job Category must not be empty")
+      .isIn(Object.values(JobCategory))
+      .withMessage("Job Category must be a valid job category"),
 ]

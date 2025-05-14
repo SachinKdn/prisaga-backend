@@ -1,5 +1,4 @@
 import { BaseSchema } from "../helper/response";
-import { Department, JobLevel, SubscriptionType } from "./enum";
 import { Location } from "./location";
 
 

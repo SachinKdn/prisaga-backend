@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
 import * as jobService from "../services/job.service";
 import { createResponse } from "../helper/response";
-import { Department, JobLevel, JobType } from "../interfaces/enum";
 import Job from "../models/job";
-import moment from 'moment';
 import { generateReferenceId } from "../utils/generateRefernceId";
 import createHttpError from "http-errors";
 import { createJobFilter } from "../utils/createJobFilter";
@@ -46,7 +44,7 @@ export const deleteJob = async (req: Request, res: Response): Promise<void> => {
 };
 
 export const getJobs = async (req: Request, res: Response) : Promise<void> => {
-    const { page = 1, limit = 10, ...query } = req.query;
+    const { page = 1, limit = 5, ...query } = req.query;
     const pageNumber = parseInt(page as string, 10);
     const pageLimit = parseInt(limit as string, 10);
 
@@ -54,7 +52,7 @@ export const getJobs = async (req: Request, res: Response) : Promise<void> => {
     
     console.log(filter, "<===filter getJobs")
 
-    const jobs = await jobService.getAllJobs(filter,pageNumber, pageLimit);
+    const jobs = await jobService.getAllJobs(filter, pageNumber, pageLimit);
     const totalCount = await Job.countDocuments(filter);
 
     res.send(

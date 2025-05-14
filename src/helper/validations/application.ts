@@ -3,6 +3,45 @@ import User from "../../models/user";
 import Application from "../../models/application";
 import Resume from "../../models/resume";
 
+export const checkCandidate = [
+  check("firstName")
+    .exists()
+    .withMessage("First Name is required")
+    .bail()
+    .notEmpty()
+    .withMessage("First Name must not be empty"),
+    check("email")
+    .exists()
+    .withMessage("Email is required")
+    .notEmpty()
+    .bail()  // Stop checking further if email is empty
+    .withMessage("Email must not be empty")
+    .isEmail()
+    .bail()  // Stop checking further if it's not a valid email
+    .withMessage("Enter a valid email"),
+    // .custom(async (value: string) => {
+    //   const application = await Application.findOne({ email: value });
+    //   if (application) {
+    //     throw new Error("Email already registered");
+    //   }
+    //   return true;
+    // }),
+    check("phoneNumber")
+    .exists()
+    .withMessage("Mobile number is required")
+    .bail()  // Stop checking further if phoneNumber is empty
+    .notEmpty()
+    .withMessage("Mobile number must not be empty")
+    .isLength({ min: 10, max: 10 })
+    .withMessage("Phone number must be between 10 digits")
+    // .custom(async (value: string) => {
+    //     const application = await Application.findOne({ phoneNumber: value });
+    //     if (application) {
+    //       throw new Error("Phone number already registered");
+    //     }
+    //     return true;
+    //   }),
+]
 export const createApplication = [
     check("firstName")
     .exists()
@@ -18,14 +57,7 @@ export const createApplication = [
     .withMessage("Email must not be empty")
     .isEmail()
     .bail()  // Stop checking further if it's not a valid email
-    .withMessage("Enter a valid email")
-    .custom(async (value: string) => {
-      const application = await Application.findOne({ email: value });
-      if (application) {
-        throw new Error("Email already registered");
-      }
-      return true;
-    }),
+    .withMessage("Enter a valid email"),
     check("phoneNumber")
     .exists()
     .withMessage("Mobile number is required")
@@ -33,14 +65,7 @@ export const createApplication = [
     .notEmpty()
     .withMessage("Mobile number must not be empty")
     .isLength({ min: 10, max: 10 })
-    .withMessage("Phone number must be between 10 digits")
-    .custom(async (value: string) => {
-        const application = await Application.findOne({ phoneNumber: value });
-        if (application) {
-          throw new Error("Phone number already registered");
-        }
-        return true;
-      }),
+    .withMessage("Phone number must be between 10 digits"),
     check("location")
     .exists()
     .withMessage("Location is required")

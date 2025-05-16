@@ -4,7 +4,7 @@ import { catchError, validate } from "../middlewares/validation";
 import passport from "passport";
 import { checkRole } from "../middlewares/checkRole";
 import { UserRole } from "../interfaces/enum";
-import { createCompany, getCompanies } from "../controllers/company";
+import { createCompany, getCompanies, getCompanyById } from "../controllers/company";
 import { isUserToken } from "../services/passport-jwt";
 
 const router = Router();
@@ -14,6 +14,7 @@ router.post("/create", checkRole([UserRole.ADMIN, UserRole.SUPERADMIN]), validat
 
 router.get("/all", checkRole([UserRole.ADMIN, UserRole.SUPERADMIN]), expressAsyncHandler(getCompanies));
 
+router.get("/:id", checkRole([UserRole.VENDOR, UserRole.ADMIN, UserRole.SUPERADMIN]), expressAsyncHandler(getCompanyById));
 
 
 export default router;

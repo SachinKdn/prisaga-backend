@@ -2,6 +2,7 @@ import { check } from "express-validator";
 import User from "../../models/user";
 import Application from "../../models/application";
 import Resume from "../../models/resume";
+import PrisagaApplication from "../../models/prisagaApplication";
 
 export const checkCandidate = [
   check("firstName")
@@ -133,7 +134,7 @@ export const createResume = [
   .bail()  // Stop checking further if it's not a valid email
   .withMessage("Enter a valid email")
   .custom(async (value: string) => {
-    const application = await Application.findOne({ email: value });
+    const application = await PrisagaApplication.findOne({ email: value });
     if (application) {
       throw new Error("Email already registered");
     }
@@ -148,7 +149,7 @@ export const createResume = [
   .isLength({ min: 10, max: 10 })
   .withMessage("Phone number must be between 10 digits")
   .custom(async (value: string) => {
-    const application = await Application.findOne({ phoneNumber: value });
+    const application = await PrisagaApplication.findOne({ phoneNumber: value });
     if (application) {
       throw new Error("Phone number already registered");
     }

@@ -19,6 +19,17 @@ export const createCompany = async (req: Request, res: Response) : Promise<void>
 }
 
 
+   
+export const getCompanyById = async (req: Request, res: Response) : Promise<void> => {
+    const id = req.params.id;
+    console.log(id);
+    const company = await companyService.getCompanyById(id);
+    res.send(
+        createResponse(company)
+            );
+    
+}
+
 export const getCompanies = async (req: Request, res: Response) : Promise<void> => {
     const { page = 1, limit = 10, ...query } = req.query;
     const pageNumber = parseInt(page as string, 10);

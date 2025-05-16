@@ -18,7 +18,7 @@ export const createAgency = async (req: Request, res: Response) : Promise<void> 
  const agency = await agencyService.createAgency(req.body);
  await User.findByIdAndUpdate(
     user._id,                   
-    { agency: agency._id } 
+    { agency: agency._id , isApproved: true} 
   );
  res.send(
     createResponse(agency)

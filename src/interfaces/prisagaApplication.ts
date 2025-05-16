@@ -15,14 +15,10 @@ export interface IPrisagaApplication extends BaseSchema{
     phoneNumber: string;
     location: Location;
     createdBy: mongoose.Types.ObjectId;
-    isCreatedByAdmin: boolean;
-    createdByAgency: mongoose.Types.ObjectId;
     image: string;
     linkedin: string;
     website: string;
-    job: mongoose.Types.ObjectId;
     resume: mongoose.Types.ObjectId;
-    status: JobApplicationStatus;
     skills: string[];
     experience: string;
 }

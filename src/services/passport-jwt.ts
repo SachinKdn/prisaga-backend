@@ -52,16 +52,17 @@ const isValidPassword = async function (value: string, password: string) {
             try {
               const user : IUser | null = await userService.getUserByEmail(email);
               if (user == null) {
-                done(createError(401, "Invalid email or password"), false);
+                done(createError(404, "Invalid email or password"), false);
                 return;
               }
               const validate = await isValidPassword(password, user.password);
+              console.log('validate', validate, password)
               if (!validate || user.isDeleted) {
-                done(createError(401, "Invalid email or password"), false);
+                done(createError(404, "Invalid email or password"), false);
                 return;
               }
               if (!user.isApproved) {
-                done(createError(401, "User is not verified yet!"), false);
+                done(createError(404, "User is not verified yet!"), false);
                 return;
               }
               if(user.role === UserRole.VENDOR && !user.agency){

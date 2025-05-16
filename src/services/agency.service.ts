@@ -85,7 +85,7 @@ export const moveJobId = async (agencyId: Types.ObjectId, jobId: string) => {
         });
     }
     if (!agency.allocatedJobIds.includes(jobObjectId)) {
-        throw createHttpError(401, {
+        throw createHttpError(404, {
             message: "Job ID not found in allocatedJobIds"
         });
     }

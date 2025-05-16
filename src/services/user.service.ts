@@ -14,6 +14,7 @@ import mongoose from "mongoose";
 export const getUserByEmail = async (email: string) => {
     console.log("finding user by mail")
     const user = await User.findOne({ email: email }).lean();
+    console.log("finding user ", user)
     return user;
   };
 export const createAgencyMainMember = async (userData: IUser) => {

@@ -33,7 +33,7 @@ const application = await applicationService.createApplication(req.body);
 
 export const createResume = async (req: Request, res: Response) : Promise<void> => {
 
-    req.body =  {...req.body, createdBy: req.user?._id, createdByAgency: null, isCreatedByAdmin: true}
+    req.body =  {...req.body, createdBy: req.user?._id}
   
   const application = await prisagaApplicationService.createPrisagaApplication(req.body);
   console.log("application-->", application)

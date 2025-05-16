@@ -8,7 +8,11 @@ export const createCompany = async (data: ICompany) => {
     console.log("\n\n\n created company -> ", company);
     return company;
 }
-
+export const getCompanyById= async (id: string): Promise<ICompany | null> => {
+    const company = await Company.findById(id).lean();
+    console.log("company------>-", company)
+    return company;
+};
 export const getAllCompanies = async (filter: any, pageNumber: number, pageLimit: number): Promise<ICompany[] | null> => {
     const companies = await Company.find(filter).lean()
             .skip((pageNumber - 1) * pageLimit) // Skip for pagination

@@ -3,10 +3,9 @@ import { AreaOfExpertises, ExperienceLevel } from "../interfaces/enum";
 
 
 export function createResumeFilter(query: any): any {
-    const  {experience, areaOfExpertise, isCreatedByAdmin = true, search} = query;
+    const  {experience, areaOfExpertise, search} = query;
     const filter: any = {};
     
-    filter.isCreatedByAdmin = isCreatedByAdmin;
     if (experience && Object.values(ExperienceLevel).includes(experience as ExperienceLevel)) {
         filter.experience = experience;
     }

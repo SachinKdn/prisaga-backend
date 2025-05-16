@@ -324,7 +324,7 @@ export const getAllUsers = async (
     filter.agency = req.user?.agency;
     filter.role = UserRole.VENDOR;
   } else {
-    filter.role = [UserRole.ADMIN];
+    filter.role = [UserRole.ADMIN,UserRole.SUPERADMIN];
   }
     console.log("filere--=-=-===-=-\n\n\n\n", filter)
   const users = await User.find(filter)

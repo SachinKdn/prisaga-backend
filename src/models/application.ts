@@ -32,11 +32,13 @@ export const ApplicationSchema = new Schema<IApplication>({
     createdByAgency: { type: mongoose.Schema.Types.ObjectId, ref: 'Agency', required: false, default: null },
     job: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Job'
+        ref: 'Job',
+        required: true
     },
     resume: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Resume'
+        ref: 'Resume',
+        required: true
     },
     status: { type: String, enum: Object.values(JobApplicationStatus), required: true, default: JobApplicationStatus.PENDING },
     linkedin: { type: String, required: false },

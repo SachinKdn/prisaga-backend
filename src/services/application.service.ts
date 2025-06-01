@@ -46,34 +46,58 @@ export const createApplication = async (data: IApplication) => {
 }
 
 export const getApplicationById = async (applicationId : string) => {
-    const application =  await Application.findById(applicationId).populate('resume').populate('createdByAgency').populate('createdBy');
+    const application =  await Application.findById(applicationId).populate('resume').populate('createdByAgency').populate('createdBy').populate({ 
+        path: 'job',
+        populate: [{
+          path: 'company',
+          model: 'Company'
+        },{
+            path: 'createdBy',
+            model: 'User'
+          } ]
+     });
     if(!application){
         throw createHttpError(404, {
-            message: "Applicaion is not found"
+            message: "Application is not found"
         });
     }
     return application;
 }
 
-export const getMyApplications = async (filter: any) => {
-    const job =  await Job.findById(filter.jobId);
-    if(!job){
-        throw createHttpError(404, {
-            message: "Job is not found"
-        });
-    }
-    const applications = await Application.find(filter).populate('resume').populate('createdByAgency').populate('createdBy');
-    return applications;
+export const getMyApplications = async (filter: any, skip: number, pageLimit: number, pageNumber: number) => {
+    const applications = await Application.find(filter)
+    .skip(skip)
+    .limit(pageLimit)
+    .sort({ createdAt: -1 }).populate('resume').populate('createdBy');
+    const totalCount = await Application.countDocuments(filter);
+    return {
+        data: applications,
+        page: pageNumber,
+        limit: pageLimit,
+        totalPages: Math.ceil(totalCount / pageLimit),
+        totalCount,
+      };
 }
-export const getApplications = async (jobId : string) => {
-    const job =  await Job.findById(jobId);
+export const getApplications = async (referenceId : string, skip: number, pageLimit: number, pageNumber: number) => {
+    const job =  await Job.findOne({referenceId});
     if(!job){
         throw createHttpError(404, {
             message: "Job is not found"
         });
     }
-    const applications = await Application.find({job: jobId}).populate('resume').populate('createdByAgency').populate('createdBy');
-    return applications;
+    const applications = await Application.find({job: job._id})
+    .skip(skip)
+    .limit(pageLimit)
+    .sort({ createdAt: -1 }).populate('resume').populate('createdByAgency').populate('createdBy');
+    console.log('applications------- -- --- -- ', applications)
+    const totalCount = await Application.countDocuments({job: job._id});
+    return ({
+        data: applications,
+        page: pageNumber,
+        limit: pageLimit,
+        totalPages: Math.ceil(totalCount / pageLimit),
+        totalCount,
+      });
 }
 
 export const updateStatus = async (id: string, data: string): Promise<IApplication | null> => {

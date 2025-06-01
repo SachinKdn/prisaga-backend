@@ -45,16 +45,15 @@ export const createResume = async (req: Request, res: Response) : Promise<void> 
   }
 
 export const updateApplicationStatus = async (req: Request, res: Response): Promise<void> => {
-  const application = await applicationService.updateStatus(req.params.id, req.body.status);
+  const application = await applicationService.updateStatus(req.params.id, req.body.applicationStatus);
   if (!application) {
       throw createHttpError(404, {
           message: "Application not found"
       });
   }
+  // NEED TO FIX --- UPDATE THE AGENCY JOBID's ARRAY WHEN STATUS CHANGES
   res.send(
-      createResponse({
-        application,
-      })
+      createResponse(application)
       );
 
 };
@@ -122,42 +121,38 @@ export const getUploadedApplicationById = async (req: Request, res: Response) : 
     const id = req.params.id;
     const applications = await applicationService.getApplicationById(id);
      res.send(
-        createResponse({
-            applications,
-        })
+        createResponse(applications)
         );
 }
 
-export const getMyUploadedApplicationById = async (req: Request, res: Response) : Promise<void> => {
-    console.log("Welcome to getMyUploadedApplicationById")
-    const id = req.params.id;
-    if(req.user?.role === UserRole.VENDOR && !req.user?.agency){
-      throw createHttpError(400, {
-          message: "Permission denied! You are not under any agency."
-      });
-    }
-    let filter: any = {jobId: id};
-    if(req.user?.role === UserRole.VENDOR) {
-      filter = {...filter, createdByAgency: req.user.agency}
-    }else{
-      filter = {...filter, isCreatedByAdmin: true}
-    }
-
-    const applications = await applicationService.getMyApplications(filter);
+export const getMyApplications = async (req: Request, res: Response) : Promise<void> => {
+  console.log("Welcome to getMyApplications");
+  if(req.user?.role === UserRole.VENDOR && !req.user?.agency){
+    throw createHttpError(400, {
+        message: "Permission denied! You are not under any agency."
+    });
+  }
+  const { page = 1, limit = 10, role, isDeleted = false } = req.query;
+  const pageNumber = parseInt(page as string, 10);
+  const pageLimit = parseInt(limit as string, 10);
+  const skip = (pageNumber - 1) * pageLimit;
+  const filter = {createdByAgency: req.user!.agency}
+  const applications = await applicationService.getMyApplications(filter, skip, pageLimit, pageNumber);
      res.send(
-        createResponse({
-            applications,
-        })
+        createResponse(applications)
         );
 }
 
-export const getUploadedApplicationsByJobId = async (req: Request, res: Response) : Promise<void> => {
-    const id = req.params.id;
-    const applications = await applicationService.getApplications(id);
+
+export const getUploadedApplicationsByJobReferenceId = async (req: Request, res: Response) : Promise<void> => {
+  const { page = 1, limit = 10, role, isDeleted = false } = req.query;
+  const pageNumber = parseInt(page as string, 10);
+  const pageLimit = parseInt(limit as string, 10);
+  const skip = (pageNumber - 1) * pageLimit;
+    const referenceId = req.params.referenceId;
+    const response = await applicationService.getApplications(referenceId,skip, pageLimit, pageNumber);
      res.send(
-        createResponse({
-            applications,
-        })
+        createResponse(response)
         );
 }
 

@@ -8,7 +8,6 @@ const errorHandler : ErrorRequestHandler = (err, req , res , next)=>{
         message: (err?.message ?? "Something went wrong") as string,
         data: err?.data ?? {},
     }
-    console.log("9274091274918490128940812097918723817")
     res.status(response.status).send(response);
     next();
 }

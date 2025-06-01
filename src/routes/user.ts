@@ -12,6 +12,8 @@ import {
   updateProfilePicture,
   verifyToken,
   registerAgencyVendor,
+  getDashboardData,
+  getVendorHomeData,
 } from "../controllers/user";
 import {
   catchError,
@@ -100,5 +102,16 @@ router.get(
   "/all",
   checkRole([UserRole.ADMIN, UserRole.VENDOR, UserRole.SUPERADMIN]),
   expressAsyncHandler(getAllUsers)
+);
+router.get(
+  "/dashboard",
+  checkRole([UserRole.ADMIN, UserRole.SUPERADMIN]),
+  expressAsyncHandler(getDashboardData)
+);
+
+router.get(
+  "/home",
+  checkRole([UserRole.VENDOR]),
+  expressAsyncHandler(getVendorHomeData)
 );
 export default router;

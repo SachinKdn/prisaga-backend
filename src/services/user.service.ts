@@ -105,7 +105,6 @@ export const getUserById = async (id: string): Promise<IUser | null> => {
       model: 'User'
     } 
  });
-  console.log('createdBy res-->', res)
     return res;
 };
 

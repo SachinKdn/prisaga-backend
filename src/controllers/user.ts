@@ -8,6 +8,8 @@ import { SubscriptionType, UserRole } from "../interfaces/enum";
 import Agency from "../models/agency";
 import User from "../models/user";
 import { generateUsernameFromEmail } from "../utils/generateUsername";
+import Job from "../models/job";
+import Application from "../models/application";
 
 export const registerAgencyVendor = async (
   req: Request,
@@ -340,6 +342,115 @@ export const getAllUsers = async (
       limit: pageLimit,
       totalPages: Math.ceil(totalCount / pageLimit),
       totalCount,
+    })
+  );
+};
+
+
+export const getDashboardData = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+ 
+  const totalVendors = await User.countDocuments({role: UserRole.VENDOR});
+  const totalMembers = await User.countDocuments({role: [UserRole.ADMIN, UserRole.SUPERADMIN]});
+  const totalJobs = await Job.countDocuments();
+  const totalApplications = await Application.countDocuments();
+  const latestVendors = await Agency.find().limit(3).sort({ createdAt: -1 });
+
+  // Get job statistics for the last 12 months
+  const currentDate = new Date();
+  const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 11, 1); // Start from 11 months ago
+  const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0); // End of current month
+
+  const jobStats = await Job.aggregate([
+    {
+      $match: {
+        createdAt: {
+          $gte: startDate,
+          $lte: endDate
+        }
+      }
+    },
+    {
+      $group: {
+        _id: {
+          year: { $year: "$createdAt" },
+          month: { $month: "$createdAt" }
+        },
+        count: { $sum: 1 }
+      }
+    },
+    {
+      $sort: {
+        "_id.year": 1,
+        "_id.month": 1
+      }
+    }
+  ]);
+
+  // Create array of last 12 months labels
+  const months = [];
+  const jobCounts = Array(12).fill(0);
+  
+  for (let i = 0; i < 12; i++) {
+    const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+    months.unshift(date.toLocaleString('default', { month: 'short' }));
+  }
+
+  // Map job counts to their respective months
+  jobStats.forEach(stat => {
+    const statDate = new Date(stat._id.year, stat._id.month - 1, 1);
+    const monthDiff = (currentDate.getFullYear() - statDate.getFullYear()) * 12 + 
+                     (currentDate.getMonth() - statDate.getMonth());
+    const index = 11 - monthDiff; // Reverse index to match the months array
+    if (index >= 0 && index < 12) {
+      jobCounts[index] = stat.count;
+    }
+  });
+
+  const lineChartData = {
+    months: months,
+    data: jobCounts,
+  };
+
+  res.send(
+    createResponse({
+      totalVendors,
+      totalMembers,
+      totalJobs,
+      totalApplications,
+      latestVendors,
+      lineChartData
+    })
+  );
+};
+
+export const getVendorHomeData = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const currentUser = await User.findById(req.user?._id).populate('agency').lean()
+  if(!currentUser?.agency?._id){
+      throw createHttpError(400, {
+          message: "Permission denied! You are not under any agency."
+      });
+  }
+  const agency = await Agency.findById(currentUser?.agency?._id).lean();
+  const allocatedJobsCount = agency?.allocatedJobIds.length;
+  const deallocatedJobsCount = agency?.deallocatedJobIds.length;
+  const engagedJobsCount = agency?.engagedJobIds.length;
+  const totalMembers = await User.countDocuments({ createdBy: req.user?._id });
+  const latestJobs = await Job.find().limit(3).sort({ createdAt: -1 });
+
+
+  res.send(
+    createResponse({
+      allocatedJobsCount,
+      deallocatedJobsCount,
+      engagedJobsCount,
+      totalMembers,
+      latestJobs,
     })
   );
 };

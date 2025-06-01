@@ -5,7 +5,7 @@ import { catchError, validate, validateIdParam } from "../middlewares/validation
 import passport from "passport";
 import { checkRole } from "../middlewares/checkRole";
 import { UserRole } from "../interfaces/enum";
-import { createApplication, uploadFile, getUploadedApplicationsByJobId, updateApplicationStatus, updateApplication, getUploadedApplicationById, getMyUploadedApplicationById, createResume, getAllResumesUploadedByAdmins, getApplication } from "../controllers/application";
+import { createApplication, uploadFile, getUploadedApplicationsByJobReferenceId, updateApplicationStatus, updateApplication, getUploadedApplicationById, createResume, getAllResumesUploadedByAdmins, getApplication, getMyApplications } from "../controllers/application";
 import multer from "multer";
 import { checkSubscription } from "../middlewares/checkSubscription";
 import { isUserToken } from "../services/passport-jwt";
@@ -19,6 +19,7 @@ router.use(passport.authenticate("jwt", { session: false }), isUserToken)
 
 router.post("/checkCandidate", checkRole([UserRole.VENDOR]), checkSubscription(), validate("application:checkCandidate"), catchError, expressAsyncHandler(getApplication));
 
+router.get("/myApplications", checkRole([UserRole.VENDOR]), expressAsyncHandler(getMyApplications));
 router.post('/upload', checkRole([UserRole.VENDOR, UserRole.SUPERADMIN, UserRole.ADMIN]), checkSubscription(), upload.single('file'), expressAsyncHandler(uploadFile));
 router.post("/create", checkRole([UserRole.VENDOR]), checkSubscription(), validate("application:create"), catchError, expressAsyncHandler(createApplication));
 router.post("/resume/create", checkRole([UserRole.SUPERADMIN, UserRole.ADMIN]), checkSubscription(), validate("resume:create"), catchError, expressAsyncHandler(createResume));
@@ -26,8 +27,7 @@ router.get("/resumes", checkRole([UserRole.SUPERADMIN, UserRole.ADMIN]), express
 router.put("/:id", validateIdParam('id'), checkRole([UserRole.VENDOR]), expressAsyncHandler(updateApplication));
 router.put("/updateStatus/:id", checkRole([UserRole.ADMIN, UserRole.SUPERADMIN]), catchError, expressAsyncHandler(updateApplicationStatus));
 router.get("/:id", validateIdParam('id'), checkRole([UserRole.VENDOR, UserRole.ADMIN, UserRole.SUPERADMIN]), expressAsyncHandler(getUploadedApplicationById));
-router.get("/myApplications/:id", validateIdParam('id'), checkRole([UserRole.VENDOR]), expressAsyncHandler(getMyUploadedApplicationById));
-router.get("/job/:id", validateIdParam('id'), checkRole([UserRole.ADMIN, UserRole.SUPERADMIN]), expressAsyncHandler(getUploadedApplicationsByJobId));
+router.get("/job/:referenceId", checkRole([UserRole.ADMIN, UserRole.SUPERADMIN]), expressAsyncHandler(getUploadedApplicationsByJobReferenceId));
 
 
 
